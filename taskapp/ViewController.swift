@@ -10,27 +10,97 @@ import UIKit
 import RealmSwift
 import UserNotifications
 
-class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
+class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UIPickerViewDataSource,UIPickerViewDelegate{
     @IBOutlet weak var tableView: UITableView!
+    
+    @IBOutlet weak var surchCategory: UITextField!
+    
+    var categorytext=""
     
     //Realmインスタンスの取得
     let realm = try! Realm()
     
     //Db内のたすくが収納されるリスト
     //日付で日付近い順（降順でソート）
-    let taskArray=try! Realm().objects(Task.self).sorted(byKeyPath: "date", ascending: false)
+    var taskArray=try! Realm().objects(Task.self).sorted(byKeyPath: "date", ascending: false)
+    
+    var categoryArray=try! Realm().objects(Category.self).sorted(byKeyPath: "id", ascending: true)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        let category=Category()
+        
+        try! realm.write {
+            category.name="全てを表示"
+            category.id=0
+            realm.add(category, update: true)
+            
+        }
+        
         tableView.delegate=self
         tableView.dataSource=self
+        
+        let pickerview=UIPickerView()
+        pickerview.delegate=self
+        pickerview.dataSource=self
+        
+        surchCategory.inputView=pickerview
+        
+        let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 35))
+        let spacelItem = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
+        let doneItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done))
+        toolbar.setItems([spacelItem, doneItem], animated: true)
+        
+        surchCategory.inputAccessoryView = toolbar
+        
     }
+    
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    @objc func done() {
+        surchCategory.endEditing(true)
+        
+        if categorytext != ""{
+        surchCategory.text = categorytext
+        }else{
+            surchCategory.text="全てを表示"
+        }
+        if surchCategory.text=="全てを表示"{
+            taskArray=realm.objects(Task.self).sorted(byKeyPath: "id", ascending: true)
+        }else if surchCategory.text != "未指定"{
+        
+        taskArray=realm.objects(Task.self).filter("categorys=%@",categorytext)
+        
+        }else{
+            taskArray=realm.objects(Task.self).filter("categorys=%@","")
+        }
+        tableView.reloadData()
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+       return categoryArray.count
+    }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return  categoryArray[row].name
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        categorytext=categoryArray[row].name
+    }
+    
+    
+    
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let inputviewcontroller:inputViewController=segue.destination as! inputViewController
@@ -39,12 +109,12 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
             let indexPath=self.tableView.indexPathForSelectedRow
             inputviewcontroller.task=taskArray[indexPath!.row]
         }else{
-            let task=Task()
+             let task=Task()
             task.date=Date()
             
-            let allTaks=realm.objects(Task.self)
-            if allTaks.count != 0{
-                task.id=allTaks.max(ofProperty: "id")!+1
+            let allTask=realm.objects(Task.self)
+            if allTask.count != 0{
+                task.id=allTask.max(ofProperty: "id")!+1
             }
             inputviewcontroller.task=task
         }
@@ -56,8 +126,9 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return taskArray.count
-    }
+            return taskArray.count
+        }
+    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell=tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
