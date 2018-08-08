@@ -30,6 +30,8 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
+        self.navigationItem.hidesBackButton=true
+        
         let category=Category()
         
         try! realm.write {
@@ -104,6 +106,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let inputviewcontroller:inputViewController=segue.destination as! inputViewController
+        
         
         if segue.identifier=="cellSegue"{
             let indexPath=self.tableView.indexPathForSelectedRow
