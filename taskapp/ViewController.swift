@@ -75,12 +75,10 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         }
         if surchCategory.text=="全てを表示"{
             taskArray=realm.objects(Task.self).sorted(byKeyPath: "id", ascending: true)
-        }else if surchCategory.text != "未指定"{
+        }else{
         
         taskArray=realm.objects(Task.self).filter("categorys=%@",categorytext)
         
-        }else{
-            taskArray=realm.objects(Task.self).filter("categorys=%@","")
         }
         tableView.reloadData()
     }

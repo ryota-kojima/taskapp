@@ -11,7 +11,7 @@ import RealmSwift
 
 class Category:Object {
     
-    @objc dynamic var name=""
+    @objc dynamic var name="未指定"
     
     @objc dynamic var id=0
     

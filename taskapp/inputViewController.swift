@@ -144,7 +144,12 @@ class inputViewController: UIViewController,UIPickerViewDelegate,UIPickerViewDat
                 self.task.title=self.titleTextField.text!
                 self.task.contens=self.contentsTextView.text!
                 self.task.date=datePicker.date
+                
+                if categ == ""{
+                    self.task.categorys="未指定"
+                }else{
                 self.task.categorys=categ
+                }
                 self.realm.add(self.task,update:true)
             }
             
