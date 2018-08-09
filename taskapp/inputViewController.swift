@@ -147,6 +147,9 @@ class inputViewController: UIViewController,UIPickerViewDelegate,UIPickerViewDat
                 self.task.categorys=categ
                 self.realm.add(self.task,update:true)
             }
+            
+            setNotification(task: task)
+            
         }else{
             realm.delete(task)
         }
